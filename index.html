@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محلات خالد جميلة - نظام الفواتير</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبة توليد الـ PDF مباشرة من داخل التطبيق -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body, table, th, td, input, select, button, div, span, p, h1, h2, h3, label {
@@ -13,7 +14,7 @@
             -webkit-print-color-adjust: exact;
         }
         .invoice-container {
-            font-size: 14px;
+            font-size: 13px;
             width: 100%;
             max-width: 700px;
             margin: 0 auto;
@@ -22,10 +23,12 @@
         .invoice-table th, .invoice-table td {
             padding-top: 2px !important;
             padding-bottom: 2px !important;
-            padding-left: 5px !important;
-            padding-right: 5px !important;
-            font-size: 13px !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+            font-size: 12px !important;
         }
+        
+        /* إعدادات الطباعة المباشرة: إخفاء الأزرار وجعل الخلفية بيضاء بالكامل */
         @media print {
             @page {
                 size: A4;
@@ -36,14 +39,15 @@
             }
             body {
                 background-color: white !important;
-                padding: 0 !important;
                 margin: 0 !important;
+                padding: 0 !important;
             }
             .invoice-container {
                 border: none !important;
                 box-shadow: none !important;
-                padding: 0 !important;
+                margin: 0 auto !important;
                 width: 100% !important;
+                max-width: 100% !important;
             }
         }
     </style>
@@ -54,47 +58,47 @@
         
         <!-- رأس الفاتورة -->
         <div class="text-center border-b-2 border-black pb-2 mb-2">
-            <h1 class="text-3xl font-black mb-1.5 tracking-wide">محلات خالد جميلة</h1>
-            <p class="text-base font-black mb-1">بيع جميع الملابس الداخلية رجالي نسائي</p>
-            <p class="text-xs font-black mb-0.5">الفرع الأول: الشورجة - شارع الفرفوري القديم - عمارة الكواز - مقابل سوق المعاضد</p>
-            <p class="text-xs font-black mb-1.5">الفرع الثاني: الشورجة - عمارة البلور محلات خالد جميلة</p>
-            <div class="flex justify-center items-center gap-5 text-sm mt-1.5 font-black" dir="rtl">
+            <h1 class="text-xl font-black mb-0.5">محلات خالد جميلة</h1>
+            <p class="text-xs mb-0.5">بيع جميع الملابس الداخلية رجالي نسائي</p>
+            <p class="text-[11px] mb-0.5">الفرع الأول: الشورجة - شارع الفرفوري القديم - عمارة الكواز - مقابل سوق المعاضد</p>
+            <p class="text-[11px] mb-1">الفرع الثاني: الشورجة - عمارة البلور محلات خالد جميلة</p>
+            <div class="flex justify-center items-center gap-4 text-[11px] mt-0.5">
                 <span>هاتف: <bdi dir="ltr">07713505039</bdi></span>
-                <span class="bg-blue-100 px-2.5 py-0.5 rounded text-blue-900 border border-blue-600">تيليجرام: <bdi dir="ltr">u60976</bdi></span>
+                <span class="bg-blue-100 px-2 py-0.5 rounded text-blue-900 border border-blue-500">تيليجرام: <bdi dir="ltr">u60976</bdi></span>
             </div>
         </div>
 
         <!-- بيانات الفاتورة الأساسية -->
-        <div class="grid grid-cols-2 gap-2 mb-2 text-sm">
+        <div class="grid grid-cols-2 gap-2 mb-2 text-xs">
             <div class="flex flex-col">
-                <label class="mb-0.5 text-xs font-black">التاريخ:</label>
-                <input type="date" id="invDate" class="border-2 border-black rounded p-1 bg-gray-50 text-xs font-black">
+                <label class="mb-0.5">التاريخ:</label>
+                <input type="date" id="invDate" class="border-2 border-black rounded p-1 bg-gray-50 text-xs">
             </div>
             <div class="flex flex-col">
-                <label class="mb-0.5 text-xs font-black">رقم الفاتورة (N):</label>
-                <input type="text" id="invNumber" value="000001" class="border-2 border-black rounded p-1 bg-gray-50 text-center text-xs font-black">
+                <label class="mb-0.5">رقم الفاتورة (N):</label>
+                <input type="text" id="invNumber" value="000001" class="border-2 border-black rounded p-1 bg-gray-50 text-center text-xs">
             </div>
             <div class="flex flex-col">
-                <label class="mb-0.5 text-xs font-black">حضرة السيد:</label>
-                <input type="text" id="custName" placeholder="اسم الزبون" class="border-2 border-black rounded p-1 bg-gray-50 text-xs font-black">
+                <label class="mb-0.5">حضرة السيد:</label>
+                <input type="text" id="custName" placeholder="اسم الزبون" class="border-2 border-black rounded p-1 bg-gray-50 text-xs">
             </div>
             <div class="flex flex-col">
-                <label class="mb-0.5 text-xs font-black">العنوان:</label>
-                <input type="text" id="custAddress" placeholder="عنوان الزبون" class="border-2 border-black rounded p-1 bg-gray-50 text-xs font-black">
+                <label class="mb-0.5">العنوان:</label>
+                <input type="text" id="custAddress" placeholder="عنوان الزبون" class="border-2 border-black rounded p-1 bg-gray-50 text-xs">
             </div>
         </div>
 
-        <!-- إضافة المواد (لا تظهر عند الطباعة) -->
-        <div class="no-print bg-gray-50 p-2.5 rounded border-2 border-black mb-2">
+        <!-- إضافة المواد (تختفي عند الطباعة/الـ PDF) -->
+        <div class="no-print bg-gray-50 p-2 rounded border-2 border-black mb-2">
             <h3 id="formTitle" class="text-xs mb-1.5 font-black">إضافة مادة للفاتورة:</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-1.5">
-                <input type="text" id="itemName" placeholder="اسم المادة / الوصف" class="border-2 border-black rounded p-1 text-xs font-black">
-                <input type="number" step="any" id="itemPrice" placeholder="السعر ($)" class="border-2 border-black rounded p-1 text-xs font-black">
-                <input type="number" id="itemQty" value="1" placeholder="الكمية" class="border-2 border-black rounded p-1 text-xs font-black">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-1.5 mb-1.5">
+                <input type="text" id="itemName" placeholder="اسم المادة / الوصف" class="border-2 border-black rounded p-1 text-xs">
+                <input type="number" step="any" id="itemPrice" placeholder="السعر" class="border-2 border-black rounded p-1 text-xs">
+                <input type="number" id="itemQty" value="1" placeholder="الكمية" class="border-2 border-black rounded p-1 text-xs">
             </div>
             <div class="flex gap-2">
-                <button id="actionBtn" onclick="saveItem()" class="flex-1 bg-blue-600 text-white py-1.5 rounded border-2 border-black hover:bg-blue-700 transition text-xs font-black">إضافة المادة</button>
-                <button onclick="clearForm()" class="bg-gray-400 text-white px-4 py-1.5 rounded border-2 border-black text-xs font-black">مسح الكل</button>
+                <button id="actionBtn" onclick="saveItem()" class="flex-1 bg-blue-600 text-white py-1 rounded border-2 border-black hover:bg-blue-700 transition text-xs">إضافة المادة</button>
+                <button onclick="clearForm()" class="bg-gray-400 text-white px-3 py-1 rounded border-2 border-black text-xs">مسح الكل</button>
             </div>
         </div>
 
@@ -103,50 +107,50 @@
             <table class="invoice-table w-full border-collapse border-2 border-black text-center text-xs">
                 <thead>
                     <tr class="bg-gray-200 border-b-2 border-black">
-                        <th class="border border-black p-1 w-9 text-xs font-black">ت</th>
-                        <th class="border border-black p-1 text-xs font-black">التفاصيل</th>
-                        <th class="border border-black p-1 w-32 text-xs font-black">السعر</th>
-                        <th class="border border-black p-1 w-16 text-xs font-black">الكمية</th>
-                        <th class="border border-black p-1 whitespace-nowrap text-xs font-black">المبلغ الكلي</th>
-                        <th class="no-print border border-black p-1 w-36 text-xs font-black">التحكم</th>
+                        <th class="border border-black p-1 w-8">ت</th>
+                        <th class="border border-black p-1">التفاصيل</th>
+                        <th class="border border-black p-1 w-20">السعر</th>
+                        <th class="border border-black p-1 w-12">الكمية</th>
+                        <th class="border border-black p-1 w-24">المبلغ الكلي</th>
+                        <th class="no-print border border-black p-1 w-28">التحكم</th>
                     </tr>
                 </thead>
                 <tbody id="itemsTable">
-                    <!-- سيتم إضافة المواد هنا ديناميكياً -->
+                    <!-- سيتم إضافة المواد هنا تلقائياً -->
                 </tbody>
             </table>
         </div>
 
         <!-- إجمالي الكمية والمجموع الكلي -->
         <div class="grid grid-cols-2 gap-2 mb-2">
-            <div class="bg-gray-200 border-2 border-black p-1.5 rounded text-xs font-black flex justify-between items-center">
+            <div class="bg-gray-200 border-2 border-black p-1.5 rounded text-xs flex justify-between items-center">
                 <span>إجمالي الكمية:</span>
-                <span id="totalQtyText" class="text-xs font-black">0 قطعة</span>
+                <span id="totalQtyText">0 قطعة</span>
             </div>
-            <div class="bg-gray-200 border-2 border-black p-1.5 rounded text-xs font-black flex justify-between items-center">
+            <div class="bg-gray-200 border-2 border-black p-1.5 rounded text-xs flex justify-between items-center">
                 <span>المجموع الكلي:</span>
-                <span id="grandTotal" class="text-sm font-black whitespace-nowrap">$0</span>
+                <span id="grandTotal" class="text-xs font-black" dir="ltr"><bdi>0 $</bdi></span>
             </div>
         </div>
 
         <!-- التوقيع والملاحظات -->
         <div class="flex justify-between items-end mb-1 text-xs">
-            <div class="text-red-600 font-black text-sm">
+            <div class="text-red-600 font-black text-xs">
                 الخطأ مرجوع للطرفين
             </div>
             <div class="text-left">
-                <p class="mb-3 text-xs font-black">التوقيع:</p>
-                <div class="border-t-2 border-black w-28"></div>
+                <p class="mb-4">التوقيع:</p>
+                <div class="border-t-2 border-black w-24"></div>
             </div>
         </div>
 
-        <!-- أزرار الطباعة والحفظ -->
-        <div class="no-print flex gap-2 mt-2">
-            <button onclick="saveAsPDF()" class="flex-1 bg-purple-700 text-white py-2 rounded border-2 border-black text-xs font-black hover:bg-purple-800 transition">
-                💾 حفظ ملف PDF
-            </button>
-            <button onclick="printInvoice()" class="flex-1 bg-green-600 text-white py-2 rounded border-2 border-black text-xs font-black hover:bg-green-700 transition">
+        <!-- أزرار الطباعة والتحميل (تختفي عند الطباعة/الـ PDF) -->
+        <div class="no-print grid grid-cols-2 gap-2 mt-2">
+            <button onclick="printInvoice()" class="w-full bg-blue-600 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-blue-700 transition">
                 🖨️ طباعة مباشرة
+            </button>
+            <button onclick="downloadPDF()" class="w-full bg-green-600 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-green-700 transition">
+                📥 تحميل كـ PDF
             </button>
         </div>
 
@@ -159,7 +163,7 @@
         let editingIndex = -1;
         const MAX_ROWS = 30;
 
-        const INVOICE_STORAGE_KEY = 'kj_last_invoice_number_USD_iphone_fix_v2';
+        const INVOICE_STORAGE_KEY = 'kj_last_invoice_number_USD_v3';
 
         function formatInvoiceNumber(n) {
             n = parseInt(n, 10);
@@ -210,7 +214,7 @@
                 items[editingIndex] = { name, price, qty, total };
                 editingIndex = -1;
                 document.getElementById('actionBtn').innerText = 'إضافة المادة';
-                document.getElementById('actionBtn').className = 'flex-1 bg-blue-600 text-white py-1.5 rounded border-2 border-black hover:bg-blue-700 transition text-xs font-black';
+                document.getElementById('actionBtn').className = 'flex-1 bg-blue-600 text-white py-1 rounded border-2 border-black hover:bg-blue-700 transition text-xs';
                 document.getElementById('formTitle').innerText = 'إضافة مادة للفاتورة:';
             }
 
@@ -229,7 +233,7 @@
             
             editingIndex = index;
             document.getElementById('actionBtn').innerText = 'تحديث المادة';
-            document.getElementById('actionBtn').className = 'flex-1 bg-amber-600 text-white py-1.5 rounded border-2 border-black hover:bg-amber-700 transition text-xs font-black';
+            document.getElementById('actionBtn').className = 'flex-1 bg-amber-600 text-white py-1 rounded border-2 border-black hover:bg-amber-700 transition text-xs';
             document.getElementById('formTitle').innerText = 'تعديل المادة رقم ' + (index + 1) + ':';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -254,7 +258,7 @@
             document.getElementById('itemPrice').value = '';
             document.getElementById('itemQty').value = '1';
             document.getElementById('actionBtn').innerText = 'إضافة المادة';
-            document.getElementById('actionBtn').className = 'flex-1 bg-blue-600 text-white py-1.5 rounded border-2 border-black hover:bg-blue-700 transition text-xs font-black';
+            document.getElementById('actionBtn').className = 'flex-1 bg-blue-600 text-white py-1 rounded border-2 border-black hover:bg-blue-700 transition text-xs';
             document.getElementById('formTitle').innerText = 'إضافة مادة للفاتورة:';
             renderTable();
         }
@@ -266,22 +270,22 @@
             let totalQuantity = 0;
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-2.5 text-center border border-black text-gray-700 text-xs font-black">لا توجد مواد مضافة حالياً (قم بإضافة المواد لتظهر هنا)</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-2 text-center border border-black text-gray-500 text-xs">لا توجد مواد مضافة حالياً</td></tr>`;
             } else {
                 items.forEach((item, index) => {
                     grandTotal += item.total;
                     totalQuantity += item.qty;
                     tbody.innerHTML += `
                         <tr class="border-b border-black">
-                            <td class="border border-black p-1 text-xs font-black">${index + 1}</td>
-                            <td class="border border-black p-1 text-right pr-2 text-xs font-black">${item.name}</td>
-                            <td class="border border-black p-1 text-xs font-black whitespace-nowrap" dir="ltr"><bdi>$${item.price.toLocaleString()}</bdi></td>
-                            <td class="border border-black p-1 text-xs font-black">${item.qty}</td>
-                            <td class="border border-black p-1 text-xs font-black whitespace-nowrap" dir="ltr"><bdi>$${item.total.toLocaleString()}</bdi></td>
-                            <td class="no-print border border-black p-1 text-center">
-                                <div class="flex justify-center gap-1.5">
-                                    <button onclick="editItem(${index})" class="bg-amber-500 text-white px-2 py-0.5 rounded text-xs border border-black hover:bg-amber-600 transition font-black">تعديل</button>
-                                    <button onclick="deleteItem(${index})" class="bg-red-600 text-white px-2 py-0.5 rounded text-xs border border-black hover:bg-red-700 transition font-black">حذف</button>
+                            <td class="border border-black p-1 text-xs">${index + 1}</td>
+                            <td class="border border-black p-1 text-right pr-2 text-xs">${item.name}</td>
+                            <td class="border border-black p-1 text-xs whitespace-nowrap" dir="ltr"><bdi>$${item.price.toLocaleString()}</bdi></td>
+                            <td class="border border-black p-1 text-xs">${item.qty}</td>
+                            <td class="border border-black p-1 text-xs whitespace-nowrap" dir="ltr"><bdi>$${item.total.toLocaleString()}</bdi></td>
+                            <td class="no-print border border-black p-0.5 text-center">
+                                <div class="flex justify-center gap-1">
+                                    <button onclick="editItem(${index})" class="bg-amber-500 text-white px-1.5 py-0.5 rounded text-[10px] border border-black">تعديل</button>
+                                    <button onclick="deleteItem(${index})" class="bg-red-600 text-white px-1.5 py-0.5 rounded text-[10px] border border-black">حذف</button>
                                 </div>
                             </td>
                         </tr>
@@ -308,7 +312,8 @@
             return str.replace(/[\\/:*?"<>|]/g, '').trim();
         }
 
-        async function saveAsPDF() {
+        // دالة توليد وتحميل الـ PDF مع تثبيت العرض لضمان عدم الخربطة على الهواتف
+        function downloadPDF() {
             if (items.length === 0) {
                 alert('لا يمكن حفظ فاتورة فارغة');
                 return;
@@ -324,9 +329,10 @@
             const originalWidth = element.style.width;
             element.style.width = '700px';
 
-            const noPrintEls = element.querySelectorAll('.no-print');
-            noPrintEls.forEach(el => el.style.display = 'none');
+            const noPrintElements = element.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.style.display = 'none');
 
+            // تحويل حقول الإدخال إلى نصوص مؤقتاً لتظهر بشكل مثالي داخل ملف الـ PDF
             const inputs = element.querySelectorAll('input');
             const replacements = [];
             inputs.forEach(input => {
@@ -338,21 +344,20 @@
                 }
                 span.textContent = displayValue || '\u00A0';
                 span.className = input.className + ' font-black';
-                span.style.cssText = 'display:inline-block; min-width: 40px; font-weight: 900 !important; font-size: 13px; background:transparent;';
+                span.style.cssText = 'display:inline-block; min-width: 40px; font-weight: 900 !important; font-size: 12px; background:transparent;';
                 input.style.display = 'none';
                 input.insertAdjacentElement('afterend', span);
                 replacements.push({ input, span });
             });
 
             const opt = {
-                margin: [5, 5, 5, 5],
+                margin: 5,
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
-                    logging: false, 
-                    scrollY: 0,
+                    logging: false,
                     windowWidth: 700 
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -360,32 +365,28 @@
 
             const restore = () => {
                 element.style.width = originalWidth;
-                noPrintEls.forEach(el => el.style.display = '');
-                replacements.push(null); // placeholder
+                noPrintElements.forEach(el => el.style.display = '');
                 replacements.forEach(item => {
-                    if (item) {
-                        item.input.style.display = '';
-                        item.span.remove();
-                    }
+                    item.input.style.display = '';
+                    item.span.remove();
                 });
             };
 
-            try {
-                const pdfWorker = html2pdf().set(opt).from(element);
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const pdfWorker = html2pdf().set(opt).from(element);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-                if (isIOS) {
-                    pdfWorker.output('blob').then((pdfBlob) => {
-                        restore();
-                        const url = URL.createObjectURL(pdfBlob);
-                        const newWindow = window.open(url, '_blank');
-                        if (!newWindow) {
-                            window.location.href = url;
-                        }
-                        advanceInvoiceNumber();
-                    });
-                } else {
-                    const pdfBlob = await pdfWorker.outputPdf('blob');
+            if (isIOS) {
+                pdfWorker.output('blob').then((pdfBlob) => {
+                    restore();
+                    const url = URL.createObjectURL(pdfBlob);
+                    const newWindow = window.open(url, '_blank');
+                    if (!newWindow) {
+                        window.location.href = url;
+                    }
+                    advanceInvoiceNumber();
+                });
+            } else {
+                pdfWorker.outputPdf('blob').then((pdfBlob) => {
                     restore();
                     const url = URL.createObjectURL(pdfBlob);
                     const a = document.createElement('a');
@@ -396,12 +397,11 @@
                     document.body.removeChild(a);
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                     advanceInvoiceNumber();
-                }
-
-            } catch (err) {
-                restore();
-                alert('حدث خطأ أثناء إنشاء ملف PDF، حاول مرة أخرى');
-                console.error(err);
+                }).catch(err => {
+                    restore();
+                    alert('حدث خطأ أثناء إنشاء ملف PDF');
+                    console.error(err);
+                });
             }
         }
     </script>
