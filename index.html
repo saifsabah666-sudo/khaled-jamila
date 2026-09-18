@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محلات خالد جميلة - نظام الفواتير</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- مكتبة توليد الـ PDF مباشرة من داخل التطبيق -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body, table, th, td, input, select, button, div, span, p, h1, h2, h3, label {
@@ -16,6 +15,7 @@
         .invoice-container {
             font-size: 13px;
         }
+        /* ضغط المسافات لتتسع لأكثر من 22 صفاً في ورقة واحدة حصراً */
         .invoice-table th, .invoice-table td {
             padding-top: 2px !important;
             padding-bottom: 2px !important;
@@ -23,21 +23,23 @@
             padding-right: 4px !important;
             font-size: 12px !important;
         }
-        
-        /* إعدادات الطباعة المباشرة: إخفاء الأزرار وجعل الخلفية بيضاء بالكامل */
         @media print {
+            @page {
+                size: A4;
+                margin: 5mm;
+            }
             .no-print {
                 display: none !important;
             }
             body {
                 background-color: white !important;
-                margin: 0 !important;
                 padding: 0 !important;
+                margin: 0 !important;
             }
             .invoice-container {
                 border: none !important;
                 box-shadow: none !important;
-                margin: 0 auto !important;
+                padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
             }
@@ -68,7 +70,7 @@
             </div>
             <div class="flex flex-col">
                 <label class="mb-0.5">رقم الفاتورة (N):</label>
-                <input type="text" id="invNumber" value="000641" class="border-2 border-black rounded p-1 bg-gray-50 text-center text-xs">
+                <input type="text" id="invNumber" value="000001" class="border-2 border-black rounded p-1 bg-gray-50 text-center text-xs">
             </div>
             <div class="flex flex-col">
                 <label class="mb-0.5">حضرة السيد:</label>
@@ -80,7 +82,7 @@
             </div>
         </div>
 
-        <!-- إضافة المواد (تختفي عند الطباعة/الـ PDF) -->
+        <!-- إضافة المواد (لا تظهر عند الطباعة) -->
         <div class="no-print bg-gray-50 p-2 rounded border-2 border-black mb-2">
             <h3 id="formTitle" class="text-xs mb-1.5 font-black">إضافة مادة للفاتورة:</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-1.5 mb-1.5">
@@ -94,7 +96,7 @@
             </div>
         </div>
 
-        <!-- جدول المواد -->
+        <!-- جدول المواد (مهيأ لـ 22 صفاً في ورقة واحدة) -->
         <div class="overflow-x-auto mb-2">
             <table class="invoice-table w-full border-collapse border-2 border-black text-center text-xs">
                 <thead>
@@ -121,7 +123,7 @@
             </div>
             <div class="bg-gray-200 border-2 border-black p-1.5 rounded text-xs flex justify-between items-center">
                 <span>المجموع الكلي:</span>
-                <span id="grandTotal" class="text-xs font-black">0 $</span>
+                <span id="grandTotal" class="text-xs font-black">0 د.ع</span>
             </div>
         </div>
 
@@ -136,13 +138,13 @@
             </div>
         </div>
 
-        <!-- أزرار الطباعة والتحميل (تختفي عند الطباعة/الـ PDF) -->
-        <div class="no-print grid grid-cols-2 gap-2 mt-2">
-            <button onclick="window.print()" class="w-full bg-blue-600 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-blue-700 transition">
-                🖨️ طباعة مباشرة
+        <!-- أزرار الطباعة والحفظ -->
+        <div class="no-print flex gap-2 mt-2">
+            <button onclick="saveAsPDF()" class="flex-1 bg-purple-700 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-purple-800 transition">
+                💾 حفظ PDF بأسم الزبون ورقم الفاتورة
             </button>
-            <button onclick="downloadPDF()" class="w-full bg-green-600 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-green-700 transition">
-                📥 تحميل كـ PDF
+            <button onclick="printInvoice()" class="flex-1 bg-green-600 text-white py-1.5 rounded border-2 border-black text-xs hover:bg-green-700 transition">
+                🖨️ طباعة مباشرة
             </button>
         </div>
 
@@ -153,6 +155,36 @@
 
         let items = [];
         let editingIndex = -1;
+
+        // ===== رقم الفاتورة التلقائي (يبدأ من 1 ويزداد كل طباعة/حفظ، ويتذكر آخر رقم بهذا الجهاز) =====
+        const INVOICE_STORAGE_KEY = 'kj_last_invoice_number';
+
+        function formatInvoiceNumber(n) {
+            n = parseInt(n, 10);
+            if (isNaN(n) || n < 1) n = 1;
+            return String(n).padStart(6, '0');
+        }
+
+        function loadInvoiceNumber() {
+            const stored = localStorage.getItem(INVOICE_STORAGE_KEY);
+            const invInput = document.getElementById('invNumber');
+            invInput.value = formatInvoiceNumber(stored || 1);
+        }
+
+        // تُستدعى بعد كل طباعة/حفظ ناجح: تحفظ الرقم الحالي وتجهز رقم الفاتورة التالية
+        function advanceInvoiceNumber() {
+            const invInput = document.getElementById('invNumber');
+            const current = parseInt(invInput.value, 10) || 0;
+            const next = current + 1;
+            try {
+                localStorage.setItem(INVOICE_STORAGE_KEY, next);
+            } catch (e) {
+                console.warn('تعذر حفظ رقم الفاتورة محلياً:', e);
+            }
+            invInput.value = formatInvoiceNumber(next);
+        }
+
+        loadInvoiceNumber();
 
         function saveItem() {
             const name = document.getElementById('itemName').value.trim();
@@ -228,7 +260,7 @@
             let totalQuantity = 0;
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-2 text-center border border-black text-gray-500 text-xs">لا توجد مواد مضافة حالياً</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-2 text-center border border-black text-gray-500 text-xs">لا توجد مواد مضافة حالياً (تتسع لأكثر من 22 صفاً في ورقة واحدة)</td></tr>`;
             } else {
                 items.forEach((item, index) => {
                     grandTotal += item.total;
@@ -239,7 +271,7 @@
                             <td class="border border-black p-1 text-right pr-2 text-xs">${item.name}</td>
                             <td class="border border-black p-1 text-xs">${item.price.toLocaleString()}</td>
                             <td class="border border-black p-1 text-xs">${item.qty}</td>
-                            <td class="border border-black p-1 text-xs">${item.total.toLocaleString()} $</td>
+                            <td class="border border-black p-1 text-xs">${item.total.toLocaleString()} د.ع</td>
                             <td class="no-print border border-black p-0.5 flex justify-center gap-1">
                                 <button onclick="editItem(${index})" class="bg-amber-500 text-white px-1.5 py-0.5 rounded text-[10px] border border-black">تعديل</button>
                                 <button onclick="deleteItem(${index})" class="bg-red-600 text-white px-1.5 py-0.5 rounded text-[10px] border border-black">حذف</button>
@@ -249,31 +281,75 @@
                 });
             }
 
-            document.getElementById('grandTotal').innerText = grandTotal.toLocaleString() + ' $';
+            document.getElementById('grandTotal').innerText = grandTotal.toLocaleString() + ' د.ع';
             document.getElementById('totalQtyText').innerText = totalQuantity + ' قطعة';
         }
 
-        // دالة توليد وتحميل الـ PDF 
-        function downloadPDF() {
+        function printInvoice() {
+            window.print();
+            advanceInvoiceNumber();
+        }
+
+        // تنظيف اسم الملف من الرموز غير المسموحة في أندرويد/آيفون
+        function sanitizeFileName(str) {
+            return str.replace(/[\\/:*?"<>|]/g, '').trim();
+        }
+
+        function saveAsPDF() {
+            const custNameRaw = document.getElementById('custName').value.trim() || 'زبون';
+            const invNumberRaw = document.getElementById('invNumber').value.trim() || 'فاتورة';
+            const safeName = sanitizeFileName(custNameRaw) || 'زبون';
+            const safeNum = sanitizeFileName(invNumberRaw) || 'فاتورة';
+            const filename = `${safeName}_${safeNum}.pdf`;
+
             const element = document.querySelector('.invoice-container');
-            const invNum = document.getElementById('invNumber').value || 'invoice';
-            
-            // إخفاء العناصر التي تحمل فئة no-print مؤقتاً أثناء التقطيع
-            const noPrintElements = element.querySelectorAll('.no-print');
-            noPrintElements.forEach(el => el.style.display = 'none');
+            const noPrintEls = element.querySelectorAll('.no-print');
+            noPrintEls.forEach(el => el.style.display = 'none');
+
+            // استبدال الحقول (input) بنصوص عادية حتى تظهر القيم بشكل صحيح داخل PDF
+            const inputs = element.querySelectorAll('input');
+            const replacements = [];
+            inputs.forEach(input => {
+                const span = document.createElement('span');
+                let displayValue = input.value;
+                if (input.type === 'date' && input.value) {
+                    const d = new Date(input.value);
+                    displayValue = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                }
+                span.textContent = displayValue || '\u00A0';
+                span.className = input.className;
+                span.style.cssText = 'display:inline-block; min-width: 40px;';
+                input.style.display = 'none';
+                input.insertAdjacentElement('afterend', span);
+                replacements.push({ input, span });
+            });
 
             const opt = {
-                margin:       5,
-                filename:     `invoice_${invNum}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 5,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().from(element).set(opt).save().then(() => {
-                // إرجاع العناصر للظهور على الشاشة بعد اكتمال التحميل
-                noPrintElements.forEach(el => el.style.display = '');
-            });
+            const restore = () => {
+                noPrintEls.forEach(el => el.style.display = '');
+                replacements.forEach(({ input, span }) => {
+                    input.style.display = '';
+                    span.remove();
+                });
+            };
+
+            html2pdf().set(opt).from(element).save()
+                .then(() => {
+                    restore();
+                    advanceInvoiceNumber();
+                })
+                .catch((err) => {
+                    restore();
+                    alert('حدث خطأ أثناء إنشاء ملف PDF، حاول مرة أخرى');
+                    console.error(err);
+                });
         }
     </script>
 </body>
