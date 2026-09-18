@@ -62,9 +62,9 @@
             <p class="text-xs mb-0.5">بيع جميع الملابس الداخلية رجالي نسائي</p>
             <p class="text-[11px] mb-0.5">الفرع الأول: الشورجة - شارع الفرفوري القديم - عمارة الكواز - مقابل سوق المعاضد</p>
             <p class="text-[11px] mb-1">الفرع الثاني: الشورجة - عمارة البلور محلات خالد جميلة</p>
-            <div class="flex justify-center items-center gap-4 text-[11px] mt-0.5">
-                <span>هاتف: <bdi dir="ltr">07713505039</bdi></span>
-                <span class="bg-blue-100 px-2 py-0.5 rounded text-blue-900 border border-blue-500">تيليجرام: <bdi dir="ltr">u60976</bdi></span>
+            <div class="flex justify-center items-center gap-6 text-[11px] mt-0.5">
+                <span>هاتف<span dir="ltr">: 07713505039</span></span>
+                <span class="bg-blue-100 px-2.5 py-0.5 rounded text-blue-900 border border-blue-500">تيليجرام<span dir="ltr">: u60976</span></span>
             </div>
         </div>
 
@@ -312,7 +312,6 @@
             return str.replace(/[\\/:*?"<>|]/g, '').trim();
         }
 
-        // دالة توليد وتحميل الـ PDF مع تثبيت العرض لضمان عدم الخربطة على الهواتف
         function downloadPDF() {
             if (items.length === 0) {
                 alert('لا يمكن حفظ فاتورة فارغة');
@@ -332,7 +331,6 @@
             const noPrintElements = element.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.display = 'none');
 
-            // تحويل حقول الإدخال إلى نصوص مؤقتاً لتظهر بشكل مثالي داخل ملف الـ PDF
             const inputs = element.querySelectorAll('input');
             const replacements = [];
             inputs.forEach(input => {
