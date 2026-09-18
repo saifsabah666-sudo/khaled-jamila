@@ -159,7 +159,7 @@
         let editingIndex = -1;
         const MAX_ROWS = 30;
 
-        const INVOICE_STORAGE_KEY = 'kj_last_invoice_number_USD_iphone_fix';
+        const INVOICE_STORAGE_KEY = 'kj_last_invoice_number_USD_iphone_fix_v2';
 
         function formatInvoiceNumber(n) {
             n = parseInt(n, 10);
@@ -321,6 +321,9 @@
             const filename = `${safeName}_${safeNum}.pdf`;
 
             const element = document.querySelector('.invoice-container');
+            const originalWidth = element.style.width;
+            element.style.width = '700px';
+
             const noPrintEls = element.querySelectorAll('.no-print');
             noPrintEls.forEach(el => el.style.display = 'none');
 
@@ -342,32 +345,39 @@
             });
 
             const opt = {
-                margin: [2, 2, 2, 2],
+                margin: [5, 5, 5, 5],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false, 
+                    scrollY: 0,
+                    windowWidth: 700 
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             const restore = () => {
+                element.style.width = originalWidth;
                 noPrintEls.forEach(el => el.style.display = '');
-                replacements.forEach(({ input, span }) => {
-                    input.style.display = '';
-                    span.remove();
+                replacements.push(null); // placeholder
+                replacements.forEach(item => {
+                    if (item) {
+                        item.input.style.display = '';
+                        item.span.remove();
+                    }
                 });
             };
 
             try {
                 const pdfWorker = html2pdf().set(opt).from(element);
-                
-                // اكتشاف أجهزة الأيفون والأيباد لتجاوز قيود سفاري الأمنية للتحميل
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
                 if (isIOS) {
                     pdfWorker.output('blob').then((pdfBlob) => {
                         restore();
                         const url = URL.createObjectURL(pdfBlob);
-                        // فتح الـ PDF في نافذة جديدة ليستطيع صديقك حفظه بسهولة من خيارات سفاري
                         const newWindow = window.open(url, '_blank');
                         if (!newWindow) {
                             window.location.href = url;
